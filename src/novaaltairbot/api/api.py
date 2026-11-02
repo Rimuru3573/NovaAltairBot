@@ -1,8 +1,9 @@
 import aiohttp
-from typing import Optional, Any
+from typing import Optional
 from novaaltairbot.api.schemas import *
+from novaaltairbot.errors import *
 
-class NeoForestlyApi():
+class NovaAltairApi():
     def __init__(self, api_path: str, bot_api_key: str):
         self.headers = {"X-API-Key": bot_api_key}
         self.base_url = api_path
@@ -22,11 +23,12 @@ class NeoForestlyApi():
             await self.session.close()
 
     
-    async def new_user(self, new_user: UserIn) -> UserOut:
-        async with self.session.post(
-            "/user/new",
-            json=new_user.model_dump(),
-        ) as response:
+    async def new_user(self, new_user: UserIn) -> UserOut | None:
+        async with self.session.post("/user/new", json=new_user.model_dump()) as response:
+
+            if response.status == 409:
+                return UserAlreadyExistsError()
+            
             data = await response.json()
             return UserOut(**data)
     

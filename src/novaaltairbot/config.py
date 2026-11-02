@@ -7,4 +7,6 @@ class Settings(BaseSettings):
     bot_api_key: str
     api_path: str
 
+    proxy: str
+
 settings = Settings()
