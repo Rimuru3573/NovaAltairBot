@@ -29,6 +29,7 @@ async def main():
 
     async with NovaAltairApi(api_path=settings.api_path, bot_api_key=settings.bot_api_key) as api:
         await dp.start_polling(bot, api=api)
+    
 
 
 

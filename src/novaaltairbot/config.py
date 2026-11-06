@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     bot_api_key: str
     api_path: str
 
-    proxy: str
+    proxy: str | None = None
+    free_trial_days: int
 
 settings = Settings()
