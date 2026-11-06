@@ -106,7 +106,8 @@ async def get_profile(callback: CallbackQuery, api: NovaAltairApi):
     try:
         key = await api.get_key(get_email(callback.from_user.id))
     except KeyNotFound:
-        await callback.message.edit_caption(caption="У вас еще нет ключа", reply_markup=get_back_kb_photo())
+        text = LEXICON["profile"].format(name=callback.from_user.username, username=username, expiry_time=None, payment_id=None)
+        await callback.message.edit_caption(caption=text, reply_markup=get_profile_kb())
         return
     
     text = LEXICON["profile"].format(name=callback.from_user.username, username=username, expiry_time=key.expiry_time.strftime('%Y-%m-%d %H:%M:%S'), payment_id=key.payment_id)
@@ -114,12 +115,19 @@ async def get_profile(callback: CallbackQuery, api: NovaAltairApi):
     await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_profile_kb())
 
 
+@router.callback_query(F.data == "buy_sub")
+async def buy_sub(callback: CallbackQuery):
+    await callback.answer()
+    text = LEXICON["rate"]
+    await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_buy_rate_kb())
+
+
+
 @router.callback_query(F.data == "extend_sub")
 async def extend_sub(callback: CallbackQuery, api: NovaAltairApi):
     await callback.answer()
-    text = LEXICON["plug"]
-    await callback.message.delete()
-    await callback.message.answer(text=text, parse_mode="HTML", reply_markup=get_back_kb())
+    text = LEXICON["rate"]
+    await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_buy_rate_kb())
 
 @router.callback_query(F.data == "referral_page")
 async def extend_sub(callback: CallbackQuery, api: NovaAltairApi):
@@ -136,6 +144,13 @@ async def extend_sub(callback: CallbackQuery, api: NovaAltairApi):
     await callback.message.answer(text=text, parse_mode="HTML", reply_markup=get_back_kb())
 
 @router.callback_query(F.data == "relaod_sub")
+async def extend_sub(callback: CallbackQuery, api: NovaAltairApi):
+    await callback.answer()
+    text = LEXICON["plug"]
+    await callback.message.delete()
+    await callback.message.answer(text=text, parse_mode="HTML", reply_markup=get_back_kb())
+
+@router.callback_query(F.data == "plug")
 async def extend_sub(callback: CallbackQuery, api: NovaAltairApi):
     await callback.answer()
     text = LEXICON["plug"]

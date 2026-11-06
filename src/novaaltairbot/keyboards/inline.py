@@ -24,10 +24,14 @@ def main_keybord(user: UserOut | None) -> InlineKeyboardMarkup:
     if user:
         if user.is_new == True:
             keyboard.row(InlineKeyboardButton(text="Пробная подписка", callback_data="get_free_sub", style="success", icon_custom_emoji_id="5429388216094444138"))
+            keyboard.row(InlineKeyboardButton(text="Купить подписку", callback_data="buy_sub", style="primary", icon_custom_emoji_id="5260730055880876557"))
         else:
             keyboard.row(InlineKeyboardButton(text="Основная подписка", callback_data="get_my_sub", style="primary", icon_custom_emoji_id="5260730055880876557"))
-    else: keyboard.row(InlineKeyboardButton(text="Основная подписка", callback_data="get_my_sub", style="primary", icon_custom_emoji_id="5260730055880876557"))
-    keyboard.row(InlineKeyboardButton(text="Продление", callback_data="extend_sub", style="primary", icon_custom_emoji_id="6005570495603282482"))
+            keyboard.row(InlineKeyboardButton(text="Продление", callback_data="extend_sub", style="primary", icon_custom_emoji_id="6005570495603282482"))
+    else: 
+        keyboard.row(InlineKeyboardButton(text="Основная подписка", callback_data="get_my_sub", style="primary", icon_custom_emoji_id="5260730055880876557"))
+        keyboard.row(InlineKeyboardButton(text="Продление", callback_data="extend_sub", style="primary", icon_custom_emoji_id="6005570495603282482"))
+
     keyboard.row(InlineKeyboardButton(text="Пригласить", callback_data="referral_page", style="primary", icon_custom_emoji_id="6019363826024061450"))
     # keyboard.row(InlineKeyboardButton(text="Инструкция", callback_data="get_instruction", style="primary", icon_custom_emoji_id="5438151723199792420"),
                 #  InlineKeyboardButton(text="Новости", url="https://t.me/мой_канал", style="primary", icon_custom_emoji_id="5877597667231534929"))
@@ -66,6 +70,19 @@ def get_agreement_kb() -> InlineKeyboardMarkup:
                 InlineKeyboardButton(text=" Политика", url="https://telegra.ph/Politika-v-otnoshenii-obrabotki-personalnyh-dannyh-NovaAltair-11-06", style="primary", icon_custom_emoji_id="5992157823838984339"))
 
     return keyboard.as_markup()
+
+
+def get_buy_rate_kb() -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboardBuilder()
+    # Заглушка в виде колбюек даты
+    keyboard.row(InlineKeyboardButton(text="1 мес. - 99  руб/мес.", callback_data="plug", style="primary", icon_custom_emoji_id="5231449120635370684"))
+    keyboard.row(InlineKeyboardButton(text="2 мес. - 179 руб/мес.", callback_data="plug", style="primary", icon_custom_emoji_id="5231449120635370684"))
+    keyboard.row(InlineKeyboardButton(text="4 мес. - 359 руб/мес.", callback_data="plug", style="primary", icon_custom_emoji_id="5231449120635370684"))
+    keyboard.row(InlineKeyboardButton(text="6 мес. - 539 руб/мес.", callback_data="plug", style="primary", icon_custom_emoji_id="5231449120635370684"))
+    keyboard.row(InlineKeyboardButton(text=" Назад", callback_data="back_main_page_photo", style="danger", icon_custom_emoji_id="5229079956545377277"))
+    
+    return keyboard.as_markup()
+
 
 
 def get_back_kb_photo() -> InlineKeyboardMarkup:
