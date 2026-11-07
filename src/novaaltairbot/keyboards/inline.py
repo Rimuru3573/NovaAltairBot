@@ -86,10 +86,10 @@ def get_agreement_kb() -> InlineKeyboardMarkup:
 def get_buy_rate_kb() -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardBuilder()
     # Заглушка в виде колбюек даты
-    keyboard.row(InlineKeyboardButton(text="1 мес. - 99  руб/мес.", callback_data="plug", style="primary", icon_custom_emoji_id="5231449120635370684"))
-    keyboard.row(InlineKeyboardButton(text="2 мес. - 179 руб/мес.", callback_data="plug", style="primary", icon_custom_emoji_id="5231449120635370684"))
-    keyboard.row(InlineKeyboardButton(text="4 мес. - 359 руб/мес.", callback_data="plug", style="primary", icon_custom_emoji_id="5231449120635370684"))
-    keyboard.row(InlineKeyboardButton(text="6 мес. - 539 руб/мес.", callback_data="plug", style="primary", icon_custom_emoji_id="5231449120635370684"))
+    keyboard.row(InlineKeyboardButton(text="1 мес. - 99  руб.", callback_data="plug", style="primary", icon_custom_emoji_id="5231449120635370684"))
+    keyboard.row(InlineKeyboardButton(text="2 мес. - 179 руб.", callback_data="plug", style="primary", icon_custom_emoji_id="5231449120635370684"))
+    keyboard.row(InlineKeyboardButton(text="4 мес. - 359 руб.", callback_data="plug", style="primary", icon_custom_emoji_id="5231449120635370684"))
+    keyboard.row(InlineKeyboardButton(text="6 мес. - 539 руб.", callback_data="plug", style="primary", icon_custom_emoji_id="5231449120635370684"))
     keyboard.row(InlineKeyboardButton(text=" Назад", callback_data="back_main_page", style="danger", icon_custom_emoji_id="5229079956545377277"))
 
     return keyboard.as_markup()
