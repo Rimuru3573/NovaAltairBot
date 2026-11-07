@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     bot: str
     bot_api_key: str
     api_path: str
+    connect_path: str
     proxy: str | None = None
     free_trial_days: int
 

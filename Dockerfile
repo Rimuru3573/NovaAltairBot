@@ -9,6 +9,9 @@ ENV PYTHONUNBUFFERED=1 \
 
 COPY . .
 
+RUN mkdir -p /app/logs \
+    && uv sync --frozen --no-dev
+
 RUN uv sync --frozen --no-dev
 
 CMD ["python", "-m", "novaaltairbot.main"]

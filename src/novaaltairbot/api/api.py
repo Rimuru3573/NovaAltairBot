@@ -1,7 +1,11 @@
 import aiohttp
 from typing import Optional
-from novaaltairbot.api.schemas import *
-from novaaltairbot.errors import *
+from novaaltairbot.api.schemas import (
+    UserIn, UserInUsername, UserOut, Key, NewKeyIn
+)
+from novaaltairbot.errors import (
+    XuiNameException, XuiException, KeyNotFound, TelegramIdAlreadyExists, DbAddException, UserNotFound, CustomException
+)
 
 class NovaAltairApi():
     def __init__(self, api_path: str, bot_api_key: str):
@@ -30,7 +34,7 @@ class NovaAltairApi():
                 return UserOut(**data)
             elif response.status == 409:
                 raise TelegramIdAlreadyExists()
-            else: raise Exception()
+            else: raise CustomException()
 
     async def new_key(self, new_key: NewKeyIn) -> Key:
         async with self.session.post("/user/key/add", json=new_key.model_dump()) as response:
@@ -43,7 +47,7 @@ class NovaAltairApi():
                 raise XuiException()
             elif response.status == 400:
                 raise DbAddException()
-            else: raise Exception()
+            else: raise CustomException()
 
     async def set_not_new(self, user: UserInUsername) -> UserOut:
         async with self.session.post("/user/set/not_new", json=user.model_dump()) as response:
@@ -52,7 +56,7 @@ class NovaAltairApi():
                 return UserOut(**data)
             elif response.status == 404:
                 raise UserNotFound()
-            else: raise Exception()
+            else: raise CustomException()
 
 
     async def get_key(self, email: str) -> Key:
@@ -62,7 +66,7 @@ class NovaAltairApi():
                 return Key(**data)
             elif response.status == 404:
                 raise KeyNotFound()
-            else: raise Exception()
+            else: raise CustomException()
 
     async def get_user(self, username: str) -> UserOut:
         async with self.session.get(f"/get/username/{username}") as response:
@@ -71,5 +75,5 @@ class NovaAltairApi():
                 return UserOut(**data)
             elif response.status == 404:
                 raise UserNotFound()
-            else: raise Exception()
+            else: raise CustomException()
     

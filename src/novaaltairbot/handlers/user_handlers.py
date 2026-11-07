@@ -1,13 +1,14 @@
 from aiogram import Router, F
 from aiogram.filters import CommandStart, CommandObject
 from aiogram.types import Message, FSInputFile, CallbackQuery, LinkPreviewOptions
+import logging as log
 import secrets
 from novaaltairbot.api.api import NovaAltairApi
 from novaaltairbot.api.schemas import (
     UserIn, NewKeyIn, UserInUsername
 )
 from novaaltairbot.keyboards.inline import (
-    get_my_sub_kb, get_profile_kb, get_agreement_kb, get_back_kb, get_buy_rate_kb, get_main_kb
+    get_my_sub_kb, get_profile_kb, get_agreement_kb, get_back_kb, get_buy_rate_kb, get_main_kb, get_connect_kb, get_instruction_kb
 )
 from novaaltairbot.errors import UserNotFound, XuiNameException, KeyNotFound
 from novaaltairbot.config import settings
@@ -42,11 +43,12 @@ async def start(msg: Message, command: CommandObject, api: NovaAltairApi):
     username = get_username(telegram_id)
     password = str(secrets.token_urlsafe(8))
 
-    referred_id = None
+    referred_user = None
     if command.args and command.args.startswith("ref_"):
         try:
-            referred_id = int(command.args.replace("ref_", ""))
+            referred_user = command.args.replace("ref_", "")
         except ValueError:
+            log.error("Ошибка преобразования referred_user")
             pass
 
     try:
@@ -56,7 +58,7 @@ async def start(msg: Message, command: CommandObject, api: NovaAltairApi):
         await msg.answer(txt, parse_mode="HTML", reply_markup=get_agreement_kb())
 
 
-    user = UserIn(username=username, password=password, referred_by_id=referred_id)
+    user = UserIn(username=username, password=password, referred_by_user=referred_user)
     db_user = await api.new_user(user)
 
     await msg.answer_photo(photo=main_page, caption=text, parse_mode="HTML", reply_markup=get_main_kb(db_user))
@@ -71,7 +73,7 @@ async def get_free_sub(callback: CallbackQuery, api: NovaAltairApi):
     try:
         new_key = await api.new_key(NewKeyIn(username=username, email=email, day_expiry=settings.free_trial_days, payment_id=None))
     except XuiNameException:
-        await callback.message.answer(text="Ах ты шалунишка, ты уже использовал пробный период!", parse_mode="HTML", link_preview_options=LinkPreviewOptions(is_disabled=True), reply_markup=get_back_kb())
+        await callback.message.edit_caption(caption="Ах ты шалунишка, ты уже использовал пробный период!", parse_mode="HTML", link_preview_options=LinkPreviewOptions(is_disabled=True), reply_markup=get_back_kb())
         return
 
     await api.set_not_new(UserInUsername(username=username))
@@ -124,21 +126,31 @@ async def buy_sub(callback: CallbackQuery):
 async def extend_sub(callback: CallbackQuery, api: NovaAltairApi):
     await callback.answer()
     text = LEXICON["rate"]
-    await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_back_kb())
+    await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_buy_rate_kb())
 
 
 
-@router.callback_query(F.data == "referral_page")
+@router.callback_query(F.data == "instruction")
 async def extend_sub(callback: CallbackQuery, api: NovaAltairApi):
     await callback.answer()
-    text = LEXICON["plug"]
-    await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_back_kb())
+    text = LEXICON["instruction"]
+    
+    await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_instruction_kb())
 
 @router.callback_query(F.data == "get_connect_page")
 async def extend_sub(callback: CallbackQuery, api: NovaAltairApi):
     await callback.answer()
-    text = LEXICON["plug"]
-    await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_back_kb())
+    text = LEXICON["get_connect"]
+    email = get_email(callback.from_user.id)
+
+    # TODO: добавить обработчик KeyNotFound в глобальный обработчик событий.
+    try:
+        key = await api.get_key(email=email)
+    except KeyNotFound:
+        await callback.message.edit_caption(caption="У вас еще нет ключа", reply_markup=get_back_kb())
+        return
+
+    await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_connect_kb(sub_link=key.sub_link, email=email))
 
 @router.callback_query(F.data == "relaod_sub")
 async def extend_sub(callback: CallbackQuery, api: NovaAltairApi):
