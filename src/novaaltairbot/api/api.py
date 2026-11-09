@@ -4,7 +4,7 @@ from novaaltairbot.api.schemas import (
     UserIn, UserInUsername, UserOut, Key, NewKeyIn
 )
 from novaaltairbot.errors import (
-    XuiNameException, XuiException, KeyNotFound, TelegramIdAlreadyExists, DbAddException, UserNotFound, CustomException
+    NameException, XuiNameException, XuiException, KeyNotFound, TelegramIdAlreadyExists, DbAddException, UserNotFound, CustomException
 )
 
 class NovaAltairApi():
@@ -49,6 +49,20 @@ class NovaAltairApi():
                 raise DbAddException()
             else: raise CustomException()
 
+    async def reload_key(self, new_key: NewKeyIn) -> Key:
+        async with self.session.post("/user/key/reload", json=new_key.model_dump()) as response:
+            if response.status == 200:
+                data = await response.json()
+                return Key(**data)
+            elif response.status == 409:
+                raise XuiNameException()
+            elif response.status == 500:
+                raise XuiException()
+            elif response.status == 400:
+                raise DbAddException()
+            else: raise CustomException()
+
+
     async def set_not_new(self, user: UserInUsername) -> UserOut:
         async with self.session.post("/user/set/not_new", json=user.model_dump()) as response:
             if response.status == 201:
@@ -56,6 +70,19 @@ class NovaAltairApi():
                 return UserOut(**data)
             elif response.status == 404:
                 raise UserNotFound()
+            else: raise CustomException()
+
+    async def referrals_reward(self, new_key: NewKeyIn) -> Key:
+        async with self.session.post("/user/referral/reward", json=new_key.model_dump()) as response:
+            if response.status == 200:
+                data = await response.json()
+                return Key(**data)
+            elif response.status == 409:
+                raise XuiNameException()
+            elif response.status == 500:
+                raise XuiException()
+            elif response.status == 400:
+                raise DbAddException()
             else: raise CustomException()
 
 
@@ -76,4 +103,23 @@ class NovaAltairApi():
             elif response.status == 404:
                 raise UserNotFound()
             else: raise CustomException()
+
+    async def get_referrals_all(self, username: str) -> int:
+        async with self.session.get(f"/user/get/referrals/all/{username}") as response:
+            if response.status == 200:
+                data = await response.json()
+                return data["count"]
+            elif response.status == 404:
+                raise NameException()
+            else: raise CustomException()
+
+    async def get_referrals(self, username: str) -> int:
+        async with self.session.get(f"/user/get/referrals/{username}") as response:
+            if response.status == 200:
+                data = await response.json()
+                return data["count"]
+            elif response.status == 404:
+                raise NameException()
+            else: raise CustomException()
+            
     
