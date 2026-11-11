@@ -34,7 +34,12 @@ LEXICON = {
         '<tg-emoji emoji-id="5260730055880876557">🔗</tg-emoji> <b>Ваша ссылка</b>\n<code>{link}</code>'
     ),
     "referral_kb": 'Попробуй AltairVpn и помоги другу получить бонусы!',
-    "referral_0": 'Вы пока никого не пригласили!'
+    "referral_0": 'Вы пока никого не пригласили!',
+    "devices": (
+        '<tg-emoji emoji-id="5258508428212445001">🎮</tg-emoji> <b>Ваши устройства</b>\n'
+        '<tg-emoji emoji-id="5357069174512303778">✅</tg-emoji> Занято мест: {hwid} из {limit_hwid}\n'
+        'Чтобы удалить устройства нажмите <b>перевыпуск</b>. Осторожно, это удалит все подключенные устройствам и заменит нынешнюю ссылку на новую.'
+        ),
 }
 
 def get_profile(name: str, username: str, expiry_time, referrals: str, payment_id: str) -> str:

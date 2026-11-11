@@ -122,4 +122,21 @@ class NovaAltairApi():
                 raise NameException()
             else: raise CustomException()
             
-    
+
+    async def get_hwinds(self, email: str) -> list[str]:
+        async with self.session.get(f"/user/key/hwids/{email}") as response:
+            if response.status == 200:
+                return await response.json()
+            else: raise CustomException()
+
+    async def get_limithwid(self, email: str) -> int:
+        async with self.session.get(f"/user/key/get/limithwid/{email}") as response:
+            if response.status == 200:
+                return await response.json()
+            else: raise CustomException()
+
+    # async def delete_hwid(self, email: str, id: int):
+    #     async with self.session.get(f"/user/hwid/delete/{email}/{id}") as response:
+    #         if response.status == 200:
+    #             return
+    #         else: raise CustomException()

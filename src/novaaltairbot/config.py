@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     proxy: str | None = None
     free_trial_days: int
     referrals_day: int
+    free_hwids: int
 
 
 def load_pricing() -> PricingConfig:

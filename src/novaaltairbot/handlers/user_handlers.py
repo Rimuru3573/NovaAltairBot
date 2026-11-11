@@ -8,7 +8,8 @@ from novaaltairbot.api.schemas import (
     UserIn, NewKeyIn, UserInUsername
 )
 from novaaltairbot.keyboards.inline import (
-    get_my_sub_kb, get_profile_kb, get_agreement_kb, get_back_kb, get_main_kb, get_connect_kb, get_instruction_kb, get_referral_kb
+    get_devices_kb, get_my_sub_kb, get_profile_kb, get_agreement_kb, get_back_kb, 
+    get_main_kb, get_connect_kb, get_instruction_kb, get_referral_kb
 )
 from novaaltairbot.errors import UserNotFound, KeyNotFound
 from novaaltairbot.config import settings
@@ -63,7 +64,7 @@ async def get_free_sub(callback: CallbackQuery, api: NovaAltairApi):
     await callback.answer()
     username = get_username(callback.from_user.id)
     email = get_email(callback.from_user.id)
-    new_key = await api.new_key(NewKeyIn(username=username, email=email, day_expiry=settings.free_trial_days, payment_id=None, limit_hwid=5))
+    new_key = await api.new_key(NewKeyIn(username=username, email=email, day_expiry=settings.free_trial_days, payment_id=None, limit_hwid=settings.free_hwids))
     await api.set_not_new(UserInUsername(username=username))
     sub_link = new_key.sub_link
 
@@ -114,7 +115,7 @@ async def extend_sub(callback: CallbackQuery, api: NovaAltairApi):
     await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_connect_kb(sub_link=key.sub_link, email=email))
 
 
-@router.callback_query(F.data == "relaod_sub")
+@router.callback_query(F.data == "reload_sub")
 async def extend_sub(callback: CallbackQuery, api: NovaAltairApi):
     await callback.answer()
     email = get_email(callback.from_user.id)
@@ -146,15 +147,51 @@ async def free_extend(callback: CallbackQuery, api: NovaAltairApi):
     if referrals == 0:
         text = LEXICON["referral_0"]
         await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_back_kb())
-    new_key = await api.referrals_reward(NewKeyIn(username=username, email=email, day_expiry=(referrals * settings.referrals_day), payment_id=key.payment_id))
+    new_key = await api.referrals_reward(NewKeyIn(username=username, email=email, day_expiry=(referrals * settings.referrals_day), payment_id=key.payment_id, limit_hwid=settings.free_hwids))
 
     text = LEXICON["main_sub"].format(sub=new_key.sub_link, expiry_time=new_key.expiry_time.strftime('%Y-%m-%d %H:%M:%S'), username=username)
     await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_my_sub_kb(new_key.sub_link))
 
 
+@router.callback_query(F.data == "devices")
+async def get_devices(callback: CallbackQuery, api: NovaAltairApi):
+    await callback.answer()
+    email = get_email(callback.from_user.id)
+    devices = await api.get_hwinds(email)
+    limit_hwid = await api.get_limithwid(email)
+
+    text = LEXICON["devices"].format(hwid=len(devices), limit_hwid=limit_hwid)
+    await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_devices_kb(devices=devices))
+
+
+# TODO: может быть потом починить отображения устройства по отдельности и удаление отдлеьного hwid
+@router.callback_query(F.data == "device")
+async def get_device(callback: CallbackQuery, api: NovaAltairApi):
+    await callback.answer(text="Эта функция пока не реализована!", show_alert=True)
+#     id = int(callback.data.split("_")[1])
+#     email = get_email(callback.from_user.id)
+#     devices = await api.get_hwinds(email)
+#     model = devices[id].split(" ")[1]
+#     client = devices[id].split(" ")[3]
+
+#     text = LEXICON["device"].format(model=model, client=client)
+#     await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_device_kb(id))
+
+
+# @router.callback_query(F.data.startswith("delete_hwid_"))
+# async def hwid_delete(callback: CallbackQuery, api: NovaAltairApi):
+#     await callback.answer()
+#     email = get_email(callback.from_user.id)
+#     id = int(callback.data.split("_")[2])
+#     await api.delete_hwid(email=email, id=(id+1))
+
+#     devices = await api.get_hwinds(email)
+#     limit_hwid = await api.get_limithwid(email)
+    
+#     text = LEXICON["devices"].format(hwid=len(devices), limit_hwid=limit_hwid)
+#     await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_devices_kb(devices=devices))
+
 
 @router.callback_query(F.data == "plug")
 async def extend_sub(callback: CallbackQuery, api: NovaAltairApi):
-    await callback.answer()
-    text = LEXICON["plug"]
-    await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_back_kb())
+    await callback.answer(text="Эта функция пока не реализована", show_alert=True)

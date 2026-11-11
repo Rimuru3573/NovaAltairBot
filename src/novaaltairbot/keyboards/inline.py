@@ -28,12 +28,12 @@ def get_main_kb(user: UserOut | None) -> InlineKeyboardMarkup:
 
 def get_my_sub_kb(sub_link: str) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardBuilder()
-    # TODO: Починить ебаный релоад и придумать как туда присунуть  limitHwid 
+
     keyboard.row(InlineKeyboardButton(text=" Подлючиться", callback_data="get_connect_page", style="primary", icon_custom_emoji_id="5260730055880876557"),
                  InlineKeyboardButton(text=" Продлить", callback_data="extend_sub", style="primary", icon_custom_emoji_id="5877410604225924969"))
     keyboard.row(InlineKeyboardButton(text=" Скопировать ссылку", copy_text=CopyTextButton(text=sub_link), style="primary"))
-    keyboard.row(InlineKeyboardButton(text=" Инструкция", callback_data="instruction", style="primary", icon_custom_emoji_id="5992157823838984339"))
-    keyboard.row(InlineKeyboardButton(text=" Перевыпустить", callback_data="plug", style="primary", icon_custom_emoji_id="5877410604225924969"))
+    keyboard.row(InlineKeyboardButton(text=" Устройства", callback_data="devices", style="primary", icon_custom_emoji_id="5258508428212445001"))
+    keyboard.row(InlineKeyboardButton(text=" Перевыпустить", callback_data="reload_sub", style="primary", icon_custom_emoji_id="5877410604225924969"))
     keyboard.row(InlineKeyboardButton(text=" Назад", callback_data="back_main_page", style="danger", icon_custom_emoji_id="5229079956545377277"))
 
     return keyboard.as_markup()
@@ -110,6 +110,25 @@ def get_referral_kb(link: str, rederrals: int) -> InlineKeyboardMarkup:
 
     return keyboard.as_markup()
 
+
+def get_devices_kb(devices: list[str]) -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboardBuilder()
+
+    for device in devices:
+        id = int(device[0]) - 1
+        keyboard.row(InlineKeyboardButton(text=device, callback_data=f"device", style="primary"))
+    keyboard.row(InlineKeyboardButton(text=" Перевыпустить", callback_data="reload_sub", style="primary", icon_custom_emoji_id="5877410604225924969"))
+    keyboard.row(InlineKeyboardButton(text=" Назад", callback_data="get_my_sub", style="danger", icon_custom_emoji_id="5229079956545377277"))
+    return keyboard.as_markup()
+
+# def get_device_kb(id: int) -> InlineKeyboardMarkup:
+#     keyboard = InlineKeyboardBuilder()
+
+#     keyboard.row(InlineKeyboardButton(text="Удалить устройство", callback_data=f"delete_hwid_{id}", style="primary", icon_custom_emoji_id="5807651380332076999"))
+#     keyboard.row(InlineKeyboardButton(text=" Перевыпустить", callback_data="reload_sub", style="primary", icon_custom_emoji_id="5877410604225924969"))
+#     keyboard.row(InlineKeyboardButton(text=" Назад", callback_data="devices", style="danger", icon_custom_emoji_id="5229079956545377277"))
+
+#     return keyboard.as_markup()
 
 
 def get_back_kb() -> InlineKeyboardMarkup:
