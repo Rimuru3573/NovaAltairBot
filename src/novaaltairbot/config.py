@@ -7,10 +7,10 @@ class Plan(BaseModel):
     months: int
     price: int
     title: str
-    limitHwid: int
 
 class PricingConfig(BaseModel):
     currency: str = "руб"
+    limitHwid: int
     plans: list[Plan]
 
 class Settings(BaseSettings):
@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     free_trial_days: int
     referrals_day: int
     free_hwids: int
+
+    admin_id: list[int]
 
 
 def load_pricing() -> PricingConfig:

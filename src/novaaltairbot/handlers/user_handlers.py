@@ -13,7 +13,7 @@ from novaaltairbot.keyboards.inline import (
 )
 from novaaltairbot.errors import UserNotFound, KeyNotFound
 from novaaltairbot.config import settings
-from novaaltairbot.lexicon import LEXICON, get_profile
+from novaaltairbot.lexicon import LEXICON, get_profile, get_sub
 import secrets
 
 
@@ -64,13 +64,18 @@ async def get_free_sub(callback: CallbackQuery, api: NovaAltairApi):
     await callback.answer()
     username = get_username(callback.from_user.id)
     email = get_email(callback.from_user.id)
-    new_key = await api.new_key(NewKeyIn(username=username, email=email, day_expiry=settings.free_trial_days, payment_id=None, limit_hwid=settings.free_hwids))
-    await api.set_not_new(UserInUsername(username=username))
-    sub_link = new_key.sub_link
+    try:
+        key = await api.new_key(NewKeyIn(username=username, email=email, day_expiry=settings.free_trial_days, payment_id=None, limit_hwid=settings.free_hwids))
+        await api.set_not_new(UserInUsername(username=username))
+        devices = await api.get_hwinds(email)
+        limit_hwid = await api.get_limithwid(email)
+    except Exception:
+        await callback.message.edit_caption(caption="Упс, произошла ошибка, напишите в поддержку.", reply_markup=get_back_kb())
+        return
 
 
-    text = LEXICON["main_sub"].format(sub=sub_link, expiry_time=new_key.expiry_time.strftime('%Y-%m-%d %H:%M:%S'), username=username)
-    await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_my_sub_kb(sub_link))
+    text = get_sub(sub=key.sub_link, expiry_time=key.expiry_time.strftime('%Y-%m-%d %H:%M:%S'), username=username, hwid=len(devices), limit_hwid=limit_hwid)
+    await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_my_sub_kb(key.sub_link))
 
 
 @router.callback_query(F.data == "get_my_sub")
@@ -78,9 +83,16 @@ async def get_main_sub(callback: CallbackQuery, api: NovaAltairApi):
     await callback.answer()
     username = get_username(callback.from_user.id)
     email = get_email(callback.from_user.id)
-    key = await api.get_key(email=email)
+    try:
+        key = await api.get_key(email=email)
+        devices = await api.get_hwinds(email)
+        limit_hwid = await api.get_limithwid(email)
+    except Exception:
+        await callback.message.edit_caption(caption="Упс, произошла ошибка, напишите в поддержку.", reply_markup=get_back_kb())
 
-    text = LEXICON["main_sub"].format(sub=key.sub_link, expiry_time=key.expiry_time.strftime('%Y-%m-%d %H:%M:%S'), username=username)
+
+
+    text = get_sub(sub=key.sub_link, expiry_time=key.expiry_time.strftime('%Y-%m-%d %H:%M:%S'), username=username, hwid=len(devices), limit_hwid=limit_hwid)
     await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_my_sub_kb(key.sub_link))
 
 
@@ -92,10 +104,12 @@ async def get_profile_(callback: CallbackQuery, api: NovaAltairApi):
     try:
         key = await api.get_key(get_email(callback.from_user.id))
     except KeyNotFound:
-        pass
+        text = get_profile(name=callback.from_user.username, username=username, referrals=referrals)
+        await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_profile_kb(callback.from_user.id))
+        return
 
     text = get_profile(name=callback.from_user.username, username=username, expiry_time=key.expiry_time.strftime('%Y-%m-%d %H:%M:%S'), referrals=referrals, payment_id=key.payment_id)
-    await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_profile_kb())
+    await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_profile_kb(callback.from_user.id))
 
 @router.callback_query(F.data == "instruction")
 async def extend_sub(callback: CallbackQuery, api: NovaAltairApi):
@@ -120,9 +134,18 @@ async def extend_sub(callback: CallbackQuery, api: NovaAltairApi):
     await callback.answer()
     email = get_email(callback.from_user.id)
     old_key = await api.get_key(email)
-    key = await api.reload_key(NewKeyIn(username=old_key.user_username, email=email, day_expiry=1, payment_id=old_key.payment_id))
+    await callback.message.edit_caption(caption='<tg-emoji emoji-id="5429455831764584284">⏳</tg-emoji> <b>Перевыпускаем подписку…</b>\nПожалуйста, подождите.',
+                                        parse_mode="HTML", reply_markup=get_back_kb())
+    try:
+        key = await api.reload_key(NewKeyIn(username=old_key.user_username, email=email, day_expiry=1, payment_id=old_key.payment_id))
+    except Exception:
+        log.exception("Не удалось перевыпустить подписку для %s", email)
+        await callback.message.edit_caption(caption="❌ Не удалось перевыпустить подписку. Попробуйте позже.", reply_markup=get_back_kb())
+        return
+    devices = await api.get_hwinds(email)
+    limit_hwid = await api.get_limithwid(email)
 
-    text = LEXICON["main_sub"].format(sub=key.sub_link, expiry_time=key.expiry_time.strftime('%Y-%m-%d %H:%M:%S'), username=old_key.user_username)
+    text = '<tg-emoji emoji-id="5357069174512303778">✅</tg-emoji> <b>Подписка успешно перевыпущена!</b>\n\n' + get_sub(sub=key.sub_link, expiry_time=key.expiry_time.strftime('%Y-%m-%d %H:%M:%S'), username=old_key.user_username, hwid=len(devices), limit_hwid=limit_hwid)
     await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_my_sub_kb(key.sub_link))
 
 
@@ -148,6 +171,11 @@ async def free_extend(callback: CallbackQuery, api: NovaAltairApi):
         text = LEXICON["referral_0"]
         await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_back_kb())
     new_key = await api.referrals_reward(NewKeyIn(username=username, email=email, day_expiry=(referrals * settings.referrals_day), payment_id=key.payment_id, limit_hwid=settings.free_hwids))
+
+    devices = await api.get_hwinds(email)
+    limit_hwid = await api.get_limithwid(email)
+    
+    text = get_sub(sub=key.sub_link, expiry_time=key.expiry_time.strftime('%Y-%m-%d %H:%M:%S'), username=new_key.user_username, hwid=len(devices), limit_hwid=limit_hwid)
 
     text = LEXICON["main_sub"].format(sub=new_key.sub_link, expiry_time=new_key.expiry_time.strftime('%Y-%m-%d %H:%M:%S'), username=username)
     await callback.message.edit_caption(caption=text, parse_mode="HTML", reply_markup=get_my_sub_kb(new_key.sub_link))

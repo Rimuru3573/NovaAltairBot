@@ -1,29 +1,26 @@
 {
     "currency": "руб",
+    "limitHwid": "5",
     "plans": [
         {
             "months": 1,
             "price": 99,
-            "title": "1 мес.",
-            "limitHwid": "5"
+            "title": "1 мес."
         },
         {
             "months": 2,
             "price": 179,
-            "title": "2 мес.",
-            "limitHwid": "5"
+            "title": "2 мес."
         },
         {
             "months": 4,
             "price": 359,
-            "title": "4 мес.",
-            "limitHwid": "5"
+            "title": "4 мес."
         },
         {
             "months": 6,
             "price": 549,
-            "title": "6 мес.",
-            "limitHwid": "5"
+            "title": "6 мес."
         }
     ]
 }

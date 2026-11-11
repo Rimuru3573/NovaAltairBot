@@ -66,14 +66,19 @@ def get_instruction_kb() -> InlineKeyboardMarkup:
     return keyboard.as_markup()
 
 
-def get_profile_kb() -> InlineKeyboardMarkup:
+def get_profile_kb(telegram_id: int) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardBuilder()
+    if telegram_id in settings.admin_id:
+        keyboard.row(InlineKeyboardButton(text="Админ панель", callback_data="admin_panel", style="success"))
 
     keyboard.row(InlineKeyboardButton(text=" Соглашение", url="https://telegra.ph/Polzovatelskoe-soglashenie-servisa-NovaAltair-11-06", style="primary", icon_custom_emoji_id="5992157823838984339"),
                  InlineKeyboardButton(text=" Политика", url="https://telegra.ph/Politika-v-otnoshenii-obrabotki-personalnyh-dannyh-NovaAltair-11-06", style="primary", icon_custom_emoji_id="5992157823838984339"))
     keyboard.row(InlineKeyboardButton(text=" Новости", url="https://t.me/мой_канал", style="primary", icon_custom_emoji_id="5877597667231534929"))
+
     keyboard.row(InlineKeyboardButton(text=" Назад", callback_data="back_main_page", style="danger", icon_custom_emoji_id="5229079956545377277"))
 
+
+    
     return keyboard.as_markup()
 
 def get_agreement_kb() -> InlineKeyboardMarkup:
@@ -90,9 +95,10 @@ def get_rate_kb(flag: str) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardBuilder()
     pricing = load_pricing()
 
+    keyboard.row(InlineKeyboardButton(text=f"{pricing.limitHwid} устройств.", callback_data="plug", style="success", icon_custom_emoji_id="5258508428212445001"))
     # flag - buy | extend
     for price in pricing.plans:
-        keyboard.row(InlineKeyboardButton(text=f"{price.title} - {price.price} {pricing.currency}. {price.limitHwid} Устройств", callback_data=f"{flag}_{price.months}_{price.limitHwid}", style="primary", icon_custom_emoji_id="5226723995184830803"))
+        keyboard.row(InlineKeyboardButton(text=f"{price.title} - {price.price} {pricing.currency}.", callback_data=f"{flag}_{price.months}", style="primary", icon_custom_emoji_id="5226723995184830803"))
     keyboard.row(InlineKeyboardButton(text=" Назад", callback_data="back_main_page", style="danger", icon_custom_emoji_id="5229079956545377277"))
 
 
